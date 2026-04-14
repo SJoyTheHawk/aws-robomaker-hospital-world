@@ -8,21 +8,41 @@ project(aws_robomaker_hospital_world)
 # Find ament packages and libraries for ament and system dependencies
 ################################################################################
 find_package(ament_cmake REQUIRED)
-find_package(gazebo_ros REQUIRED)
+find_package(ros_gz_sim REQUIRED)
 
-exec_program("python3 -m pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt")
-exec_program("python3 ${CMAKE_CURRENT_SOURCE_DIR}/fuel_utility.py download -m XRayMachine -m IVStand -m BloodPressureMonitor -m BPCart -m BMWCart -m CGMClassic -m StorageRack -m Chair -m InstrumentCart1 -m Scrubs -m PatientWheelChair -m WhiteChipChair -m TrolleyBed -m SurgicalTrolley -m PotatoChipChair -m VisitorKidSit -m FemaleVisitorSit -m AdjTable -m MopCart3 -m MaleVisitorSit -m Drawer -m OfficeChairBlack -m ElderLadyPatient -m ElderMalePatient -m InstrumentCart2 -m MetalCabinet -m BedTable -m BedsideTable -m AnesthesiaMachine -m TrolleyBedPatient -m Shower -m SurgicalTrolleyMed -m StorageRackCovered -m KitchenSink -m Toilet -m VendingMachine -m ParkingTrolleyMin -m PatientFSit -m MaleVisitorOnPhone -m FemaleVisitor -m MalePatientBed -m StorageRackCoverOpen -m ParkingTrolleyMax -d ${CMAKE_CURRENT_SOURCE_DIR}/fuel_models --verbose")
+execute_process(
+  COMMAND python3 -m pip install --break-system-packages -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt
+  COMMAND_ERROR_IS_FATAL ANY
+)
+execute_process(
+  COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/fuel_utility.py download
+    -m XRayMachine -m IVStand -m BloodPressureMonitor -m BPCart -m BMWCart
+    -m CGMClassic -m StorageRack -m Chair
+    -m InstrumentCart1 -m Scrubs -m PatientWheelChair
+    -m WhiteChipChair -m TrolleyBed -m SurgicalTrolley
+    -m PotatoChipChair -m VisitorKidSit -m FemaleVisitorSit
+    -m AdjTable -m MopCart3 -m MaleVisitorSit -m Drawer
+    -m OfficeChairBlack -m ElderLadyPatient -m ElderMalePatient
+    -m InstrumentCart2 -m MetalCabinet -m BedTable -m BedsideTable
+    -m AnesthesiaMachine -m TrolleyBedPatient -m Shower
+    -m SurgicalTrolleyMed -m StorageRackCovered -m KitchenSink
+    -m Toilet -m VendingMachine -m ParkingTrolleyMin -m PatientFSit
+    -m MaleVisitorOnPhone -m FemaleVisitor -m MalePatientBed
+    -m StorageRackCoverOpen -m ParkingTrolleyMax
+    -d ${CMAKE_CURRENT_SOURCE_DIR}/fuel_models --verbose
+  COMMAND_ERROR_IS_FATAL ANY
+)
 
 ################################################################################
 # Install
 ################################################################################
 
-install(DIRECTORY launch models fuel_models worlds
+install(DIRECTORY launch models fuel_models worlds photos
 	DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_dependencies(ament_cmake)
-ament_export_dependencies(gazebo_ros)
+ament_export_dependencies(ros_gz_sim)
 
 ################################################################################
 # Macro for ament package

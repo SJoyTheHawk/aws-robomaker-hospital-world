@@ -1,41 +1,55 @@
 import os
-import sys
 
 import launch
-from launch.conditions import IfCondition
-from launch.substitutions import PythonExpression
+from launch.actions import AppendEnvironmentVariable, DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    world_file_name = "hospital.world"
-    world = os.path.join(get_package_share_directory('aws_robomaker_hospital_world'), 'worlds', world_file_name)
+    pkg_share = get_package_share_directory('aws_robomaker_hospital_world')
 
-    gazebo_ros = get_package_share_directory('gazebo_ros')
-    gazebo_client = launch.actions.IncludeLaunchDescription(
-	launch.launch_description_sources.PythonLaunchDescriptionSource(
-            os.path.join(gazebo_ros, 'launch', 'gzclient.launch.py')),
-        condition=launch.conditions.IfCondition(launch.substitutions.LaunchConfiguration('gui'))
-     )
-    gazebo_server = launch.actions.IncludeLaunchDescription(
-        launch.launch_description_sources.PythonLaunchDescriptionSource(
-            os.path.join(gazebo_ros, 'launch', 'gzserver.launch.py'))
+    world_file_name = "hospital.world"
+    world = os.path.join(pkg_share, 'worlds', world_file_name)
+
+    ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
+
+    # Point Gazebo Harmonic to the local model directories
+    set_gz_resource_path = AppendEnvironmentVariable(
+        name='GZ_SIM_RESOURCE_PATH',
+        value=os.pathsep.join([
+            os.path.join(pkg_share, 'models'),
+            os.path.join(pkg_share, 'fuel_models'),
+        ])
     )
 
+    gz_sim = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim_share, 'launch', 'gz_sim.launch.py')
+        ),
+        launch_arguments={
+            'gz_args': PythonExpression([
+                '"' + world + ' -r" if "',
+                LaunchConfiguration('gui'),
+                '" == "true" else "' + world + ' -r -s"'
+            ]),
+        }.items()
+    )
 
-    ld = launch.LaunchDescription([
-        launch.actions.DeclareLaunchArgument(
-          'world',
-          default_value=[world, ''],
-          description='SDF world file'),
-        launch.actions.DeclareLaunchArgument(
+    return launch.LaunchDescription([
+        DeclareLaunchArgument(
+            'world',
+            default_value=world,
+            description='SDF world file'
+        ),
+        DeclareLaunchArgument(
             name='gui',
             default_value='false'
         ),
-        gazebo_server,
-        gazebo_client
+        set_gz_resource_path,
+        gz_sim,
     ])
-    return ld
 
 
 if __name__ == '__main__':
