@@ -1350,11 +1350,5 @@
       </include>
     </model>
 
-    <model name="spot">
-      <pose>-2.0 1.5 0.5 0.0 0.0 0.0</pose>
-      <include merge="true">
-        <uri>model://spot</uri>
-      </include>
-    </model>
   </world>
 </sdf>
